@@ -1,4 +1,4 @@
 /**
- * Root project package.
+ * Assorted utilities for using Reactor.
  */
-package dev.sympho.CHANGEME;
+package dev.sympho.reactor_utils;
