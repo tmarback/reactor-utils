@@ -6,12 +6,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>dev.sympho</groupId>
-    <artifactId>CHANGEME</artifactId>
+    <artifactId>reactor-utils</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 
-    <name>CHANGEME</name>
-    <description>CHANGEME.</description>
-    <url>https://CHANGEME.sympho.dev</url>
+    <name>reactor-utils</name>
+    <description>Assorted utilities for using Reactor.</description>
+    <url>https://reactor-utils.sympho.dev</url>
 
     <licenses>
         <license>
@@ -36,15 +36,15 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/tmarback/CHANGEME.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/tmarback/CHANGEME.git</developerConnection>
+        <connection>scm:git:git://github.com/tmarback/reactor-utils.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/tmarback/reactor-utils.git</developerConnection>
         <tag>HEAD</tag>
-        <url>https://github.com/tmarback/CHANGEME/tree/main</url>
+        <url>https://github.com/tmarback/reactor-utils/tree/main</url>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/tmarback/CHANGEME/issues</url>
+        <url>https://github.com/tmarback/reactor-utils/issues</url>
     </issueManagement>
 
     <properties>
@@ -457,7 +457,7 @@
                                 </goals>
                                 <configuration>
                                     <!-- GPG key used for signing -->
-                                    <keyname>CHANGEME</keyname>
+                                    <keyname>04C8F5194A05D29A3BAA8445B73FE37A1ABC3030</keyname>
                                     <!-- Prevent `gpg` from using pinentry programs -->
                                     <gpgArguments>
                                         <arg>--pinentry-mode</arg>
@@ -513,12 +513,12 @@
                 <snapshotRepository>
                     <id>github</id>
                     <name>GitHub Packages</name>
-                    <url>https://maven.pkg.github.com/tmarback/CHANGEME</url>
+                    <url>https://maven.pkg.github.com/tmarback/reactor-utils</url>
                 </snapshotRepository>
                 <repository>
                     <id>github</id>
                     <name>GitHub Packages</name>
-                    <url>https://maven.pkg.github.com/tmarback/CHANGEME</url>
+                    <url>https://maven.pkg.github.com/tmarback/reactor-utils</url>
                 </repository>
             </distributionManagement>
         </profile>

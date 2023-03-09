@@ -1,4 +1,4 @@
-package dev.sympho.CHANGEME;
+package dev.sympho.reactor_utils;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
