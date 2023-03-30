@@ -109,6 +109,12 @@
             <artifactId>reactor-core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core-micrometer</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Testing dependencies -->
 
         <dependency>

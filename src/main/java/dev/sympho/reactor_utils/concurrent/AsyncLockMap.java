@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import dev.sympho.reactor_utils.concurrent.transformer.LockMapTransformer;
 import reactor.core.publisher.Mono;
 
 /**
@@ -20,12 +21,29 @@ public class AsyncLockMap<K extends @NonNull Object> extends AbstractReactiveLoc
     /** Pseudo-lock map. */
     private final ConcurrentMap<K, Mono<Void>> locks;
 
+    /** Transformer applied to the aquisition mono before returning it. */
+    private final LockMapTransformer<K> transformer;
+
     /**
      * Creates a new instance.
      */
     public AsyncLockMap() {
 
-        locks = new ConcurrentHashMap<>();
+        this( ( key, mono ) -> mono );
+
+    }
+
+    /**
+     * Creates a new instance.
+     *
+     * @param transformer A transform function to apply to the result of 
+     *                    {@link ReactiveLockMap#acquire(Object)} before returning it.
+     *                    Also applies to {@link ReactiveLockMap#get(Object) inner locks}.
+     */
+    public AsyncLockMap( final LockMapTransformer<K> transformer ) {
+
+        this.transformer = transformer;
+        this.locks = new ConcurrentHashMap<>();
 
     }
 
@@ -54,7 +72,8 @@ public class AsyncLockMap<K extends @NonNull Object> extends AbstractReactiveLoc
             mono = Mono.just( lock );
         }
 
-        return mono.doOnCancel( () -> mono.subscribe( AcquiredLock::release ) );
+        return mono.doOnCancel( () -> mono.subscribe( AcquiredLock::release ) )
+                .transform( m -> transformer.transformAcquire( key, m ) );
 
     }
 

@@ -1,5 +1,6 @@
 package dev.sympho.reactor_utils.concurrent;
 
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -8,6 +9,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.reactivestreams.Publisher;
 
+import dev.sympho.reactor_utils.concurrent.transformer.LatchTransformer;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
@@ -31,6 +33,9 @@ public class ReactiveLatch implements Function<Object, Publisher<Void>> {
     /** The counter. */
     private final AtomicLong count;
 
+    /** Transformer applied to the await mono before returning it. */
+    private final LatchTransformer transformer;
+
     /**
      * Creates a new latch that opens after counting down a given number of times.
      *
@@ -41,12 +46,30 @@ public class ReactiveLatch implements Function<Object, Publisher<Void>> {
     @SideEffectFree
     public ReactiveLatch( final long needed ) throws IllegalArgumentException {
 
+        this( needed, m -> m );
+
+    }
+
+    /**
+     * Creates a new latch that opens after counting down a given number of times.
+     *
+     * @param needed How many times {@link #countDown()} needs to be called before
+     *               the latch opens.
+     * @param transformer A transform function to apply to the result of 
+     *                    {@link #await()} before returning it.
+     * @throws IllegalArgumentException if the given value is not positive (>0).
+     */
+    @SideEffectFree
+    public ReactiveLatch( final long needed, final LatchTransformer transformer )
+            throws IllegalArgumentException {
+
         if ( needed <= 0 ) {
             throw new IllegalArgumentException( "Latch must require a positive number." );
         }
 
         this.sink = Sinks.empty();
         this.count = new AtomicLong( needed );
+        this.transformer = Objects.requireNonNull( transformer );
 
     }
 
@@ -58,6 +81,20 @@ public class ReactiveLatch implements Function<Object, Publisher<Void>> {
     public ReactiveLatch() {
 
         this( 1L );
+
+    }
+
+    /**
+     * Creates a new latch that opens after {@link #countDown()} is called once. This is
+     * effectively a binary latch or a switch.
+     *
+     * @param transformer A transform function to apply to the result of 
+     *                    {@link #await()} before returning it.
+     */
+    @SideEffectFree
+    public ReactiveLatch( final LatchTransformer transformer ) {
+
+        this( 1L, transformer );
 
     }
 
@@ -82,7 +119,8 @@ public class ReactiveLatch implements Function<Object, Publisher<Void>> {
     @Pure
     public Mono<Void> await() {
 
-        return sink.asMono();
+        return sink.asMono()
+                .transform( transformer::transformAwait );
 
     }
 

@@ -1,9 +1,11 @@
 package dev.sympho.reactor_utils.concurrent;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import dev.sympho.reactor_utils.concurrent.transformer.LockTransformer;
 import reactor.core.publisher.Mono;
 
 /**
@@ -20,12 +22,28 @@ public final class AsyncLock extends AbstractReactiveLock {
      */
     private final AtomicReference<@Nullable Mono<Void>> pending;
 
+    /** Transformer applied to the aquisition mono before returning it. */
+    private final LockTransformer transformer;
+
     /**
      * Creates a new instance.
      */
     public AsyncLock() {
 
-        pending = new AtomicReference<>();
+        this( m -> m );
+
+    }
+
+    /**
+     * Creates a new instance.
+     *
+     * @param transformer A transformer to apply to the result of 
+     *                   {@link ReactiveLock#acquire()} before returning it.
+     */
+    public AsyncLock( final LockTransformer transformer ) {
+
+        this.transformer = Objects.requireNonNull( transformer );
+        this.pending = new AtomicReference<>();
 
     }
 
@@ -54,7 +72,8 @@ public final class AsyncLock extends AbstractReactiveLock {
             mono = Mono.just( lock );
         }
 
-        return mono.doOnCancel( () -> mono.subscribe( AcquiredLock::release ) );
+        return mono.doOnCancel( () -> mono.subscribe( AcquiredLock::release ) )
+                .transform( transformer::transformAcquire );
 
     }
 
