@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>ReactiveLock xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../apidocs/dev/sympho/reactor_utils/concurrent/ReactiveLock.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> dev.sympho.reactor_utils.concurrent;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> reactor.core.publisher.Flux;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> reactor.core.publisher.Mono;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <em class="jxr_javadoccomment"> * Lock that allows waiting for availability using reactive streams.</em>
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <em class="jxr_javadoccomment"> * </em>
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <em class="jxr_javadoccomment"> * &lt;p&gt;As with its superinterface, this lock type is &lt;b&gt;NOT reentrant&lt;/b&gt;. Waiting on a lock</em>
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <em class="jxr_javadoccomment"> * from a task that has already acquired it &lt;b&gt;WILL&lt;/b&gt; cause a deadlock.</em>
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <em class="jxr_javadoccomment"> * @version 1.0</em>
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <em class="jxr_javadoccomment"> * @since 1.0</em>
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">interface</strong> <a name="ReactiveLock" href="../../../../dev/sympho/reactor_utils/concurrent/ReactiveLock.html#ReactiveLock">ReactiveLock</a> <strong class="jxr_keyword">extends</strong> <a name="Lock" href="../../../../dev/sympho/reactor_utils/concurrent/Lock.html#Lock">Lock</a> {
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>      <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <em class="jxr_javadoccomment">     * Acquires the lock.</em>
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <em class="jxr_javadoccomment">     * </em>
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <em class="jxr_javadoccomment">     * &lt;p&gt;Note that each subscription to the returned Mono will be a &lt;i&gt;different&lt;/i&gt; acquisition</em>
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <em class="jxr_javadoccomment">     * of the lock, allowing the Mono to be re-used. If acquiring the lock only once for all</em>
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <em class="jxr_javadoccomment">     * subscribers is desired, use {@link Mono#cache()} on the returned Mono, but do be careful</em>
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <em class="jxr_javadoccomment">     * to make sure that the lock is only released when all subscribers are done.</em>
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <em class="jxr_javadoccomment">     * </em>
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <em class="jxr_javadoccomment">     * &lt;p&gt;It is safe to cancel a subscription made to the returned Mono. If a cancellation is</em>
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <em class="jxr_javadoccomment">     * detected, the lock will simply be re-released as soon as it is acquired. Do remember,</em>
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <em class="jxr_javadoccomment">     * however, that a downstream cancellation will not be propagated if this stage has already</em>
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <em class="jxr_javadoccomment">     * completed, in which case the lock must be released downstream.</em>
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <em class="jxr_javadoccomment">     * @return A Mono that issues the lock once acquired.</em>
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <em class="jxr_javadoccomment">     * @implSpec The current implementation operates in a FIFO manner. That is, when a lock is</em>
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <em class="jxr_javadoccomment">     *           released, it is given to the task that has been waiting for the longest amount</em>
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <em class="jxr_javadoccomment">     *           of time.</em>
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>      Mono&lt;AcquiredLock&gt; acquire();
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>      <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <em class="jxr_javadoccomment">     * Guards a Mono with this lock, acquiring the lock before subscribing to the Mono</em>
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <em class="jxr_javadoccomment">     * and releasing the lock when it completes. This ensures that only one subscription</em>
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <em class="jxr_javadoccomment">     * is active at any given time.</em>
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <em class="jxr_javadoccomment">     * @param &lt;T&gt; The element type.</em>
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  <em class="jxr_javadoccomment">     * @param source The Mono to guard.</em>
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  <em class="jxr_javadoccomment">     * @return The guarded Mono.</em>
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>      <strong class="jxr_keyword">default</strong> &lt;T&gt; Mono&lt;T&gt; guard( <strong class="jxr_keyword">final</strong> Mono&lt;T&gt; source ) {
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>          <strong class="jxr_keyword">return</strong> Mono.usingWhen( 
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>                  acquire(), <em class="jxr_comment">// Acquire lock</em>
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>                  l -&gt; source, <em class="jxr_comment">// Relay mono</em>
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>                  l -&gt; Mono.fromRunnable( l::release ) <em class="jxr_comment">// Release lock</em>
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>          );
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>      }
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>      <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>  <em class="jxr_javadoccomment">     * Guards a Flux with this lock, acquiring the lock before subscribing to the Flux</em>
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>  <em class="jxr_javadoccomment">     * and releasing the lock when it completes. This ensures that only one subscription</em>
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  <em class="jxr_javadoccomment">     * is active at any given time.</em>
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  <em class="jxr_javadoccomment">     * @param &lt;T&gt; The element type.</em>
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  <em class="jxr_javadoccomment">     * @param source The Flux to guard.</em>
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  <em class="jxr_javadoccomment">     * @return The guarded Flux.</em>
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>      <strong class="jxr_keyword">default</strong> &lt;T&gt; Flux&lt;T&gt; guard( <strong class="jxr_keyword">final</strong> Flux&lt;T&gt; source ) {
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>          <strong class="jxr_keyword">return</strong> Flux.usingWhen( 
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>                  acquire(), <em class="jxr_comment">// Acquire lock</em>
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>                  l -&gt; source, <em class="jxr_comment">// Relay flux</em>
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>                  l -&gt; Mono.fromRunnable( l::release ) <em class="jxr_comment">// Release lock</em>
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>          );
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>  
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>      }
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>  
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  }
+</pre>
+<hr/>
+<div id="footer">Copyright &#169; 2023. All rights reserved.</div>
+</body>
+</html>
