@@ -2,6 +2,10 @@ package dev.sympho.reactor_utils.concurrent.transformer;
 
 import java.util.function.Function;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
 import dev.sympho.reactor_utils.concurrent.AcquiredLock;
 import io.micrometer.observation.ObservationRegistry;
 import reactor.core.observability.micrometer.Micrometer;
@@ -58,11 +62,15 @@ public class ObservationTransformer implements LockTransformer, LockMapTransform
      *
      * @param <T> The mono value type.
      * @param key The tag key.
-     * @param value The tag value.
+     * @param value The tag value. If {@code null}, it does not add the tag.
      * @return The created function.
      */
-    private <T> Function<Mono<T>, Mono<T>> highCardinalityTag( 
-            final String key, final String value ) {
+    private <T extends @NonNull Object> Function<Mono<T>, Mono<T>> highCardinalityTag( 
+            final String key, final @Nullable String value ) {
+
+        if ( value == null ) {
+            return Function.identity();
+        }
 
         return mono -> mono.doOnSubscribe( s -> addHighCardinalityTag( key, value ) );
 
@@ -77,14 +85,64 @@ public class ObservationTransformer implements LockTransformer, LockMapTransform
 
     }
 
+    /**
+     * @param key The lock key. If non-{@code null}, it is added to the observation as a
+     *            high-cardinality label.
+     * @see #keyMapped(Function)
+     * @see #noKey()
+     * @implNote As lock maps cannot have {@code null} keys, generally the key will <i>always</i>
+     *           be added as a label. If it is not useful or too high cardinality, use
+     *           {@link #keyMapped(Function)} to reduce the label space or {@link #noKey()} to
+     *           prevent it from being added, or remove the {@code lockmap.key} label using 
+     *           a filter.
+     */
     @Override
+    @SuppressWarnings( "argument" ) // Weird inference
     public Mono<AcquiredLock> transformAcquire( 
-            final String key, final Mono<AcquiredLock> pending ) {
+            final @Nullable String key, final Mono<AcquiredLock> pending ) {
 
         return pending.name( "lockmap.acquire" )
                 .tag( "lockmap.name", name )
                 .transform( highCardinalityTag( "lockmap.key", key ) )
                 .tap( Micrometer.observation( registry ) );
+
+    }
+
+    /**
+     * Derives a lock map transformer that uses the given mapper function to convert
+     * keys into strings before delegating to this transformer.
+     *
+     * @param <K> The key type.
+     * @param keyMapper The function to use to transform keys. It may return {@code null}, in
+     *                  which case the key is not used as a label.
+     * @return The transformer.
+     * @see #transformAcquire(String, Mono)
+     * @apiNote The primary purpose of this method is having a way to add observability to lock
+     *          maps with non-string keys; however, it may also be used with string-keyed maps
+     *          in order to apply arbitrary transformations to the key before using it as a label
+     *          (for example, filtering out certain key values or mapping multiple keys to one
+     *          label to reduce the cardinality).
+     */
+    @SideEffectFree
+    public <K extends @NonNull Object> LockMapTransformer<K> keyMapped( 
+            final Function<K, @Nullable String> keyMapper ) {
+
+        return ( k, p ) -> transformAcquire( keyMapper.apply( k ), p );
+
+    }
+
+    /**
+     * Derives a lock map transformer that does not add the lock key as a label in the
+     * observation.
+     *
+     * @param <K> The key type.
+     * @return The transformer.
+     * @see #transformAcquire(String, Mono)
+     */
+    @SideEffectFree
+    public <K extends @NonNull Object> LockMapTransformer<K> noKey() {
+
+        return ( k, p ) -> transformAcquire( null, p );
 
     }
 

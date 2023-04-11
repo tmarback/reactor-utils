@@ -621,7 +621,7 @@
                                         <annotationProcessor>org.checkerframework.checker.interning.InterningChecker</annotationProcessor>
                                         <!-- <annotationProcessor>org.checkerframework.checker.lock.LockChecker</annotationProcessor> --> <!-- Not currently compatible with Streams (https://github.com/typetools/checker-framework/issues/5012) -->
                                         <!-- <annotationProcessor>org.checkerframework.checker.index.IndexChecker</annotationProcessor> --> <!-- Crashes with pattern matching (https://github.com/typetools/checker-framework/issues/5013) -->
-                                        <annotationProcessor>org.checkerframework.checker.fenum.FenumChecker</annotationProcessor>
+                                        <!-- <annotationProcessor>org.checkerframework.checker.fenum.FenumChecker</annotationProcessor> --> <!-- Causes bound issues, not using fenum anyway -->
                                         <annotationProcessor>org.checkerframework.checker.tainting.TaintingChecker</annotationProcessor>
                                         <annotationProcessor>org.checkerframework.checker.regex.RegexChecker</annotationProcessor>
                                         <annotationProcessor>org.checkerframework.checker.formatter.FormatterChecker</annotationProcessor>

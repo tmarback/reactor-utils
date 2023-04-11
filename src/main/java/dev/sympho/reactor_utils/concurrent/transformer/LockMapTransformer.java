@@ -1,5 +1,7 @@
 package dev.sympho.reactor_utils.concurrent.transformer;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import dev.sympho.reactor_utils.concurrent.AcquiredLock;
 import dev.sympho.reactor_utils.concurrent.ReactiveLockMap;
 import reactor.core.publisher.Mono;
@@ -12,7 +14,7 @@ import reactor.core.publisher.Mono;
  * @since 1.0
  */
 @FunctionalInterface
-public interface LockMapTransformer<K> {
+public interface LockMapTransformer<K extends @NonNull Object> {
 
     /**
      * Transforms the output of {@link ReactiveLockMap#acquire(Object)}.
