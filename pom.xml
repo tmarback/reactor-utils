@@ -5,7 +5,7 @@
 
     <groupId>dev.sympho</groupId>
     <artifactId>reactor-utils</artifactId>
-    <version>0.2.1</version>
+    <version>0.2.2-SNAPSHOT</version>
 
     <name>reactor-utils</name>
     <description>Assorted utilities for using Reactor.</description>
@@ -36,7 +36,7 @@
     <scm>
         <connection>scm:git:git://github.com/tmarback/reactor-utils.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/tmarback/reactor-utils.git</developerConnection>
-        <tag>v0.2.1</tag>
+        <tag>HEAD</tag>
         <url>https://github.com/tmarback/reactor-utils/tree/main</url>
     </scm>
 
